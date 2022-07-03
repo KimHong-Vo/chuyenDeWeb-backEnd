@@ -19,14 +19,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class User implements Serializable{
 
 	@Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    @JoinColumn(name = "Id", nullable = false, updatable = false)
-    private Long id;
+	private String email;
     private String username;
     private String password;
     private String firstName;
     private String lastName;
-    private String email;
+    
     private String phone;
     private boolean enabled = true;
     
@@ -37,12 +35,12 @@ public class User implements Serializable{
     @JsonIgnore
     Cart userCart;
 
-	public Long getId() {
-		return id;
+	public String getId() {
+		return email;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public void setId(String id) {
+		this.email = id;
 	}
 
 	public String getUsername() {
@@ -108,6 +106,11 @@ public class User implements Serializable{
 	public void setUserCart(Cart userCart) {
 		this.userCart = userCart;
 	}
-    
+	
+	@Override
+	public String toString() {
+		// TODO Auto-generated method stub
+		return "email: " + this.email + " - pass: " + this.password;
+	}
     
 }
