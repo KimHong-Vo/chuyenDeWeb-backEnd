@@ -27,7 +27,7 @@ import com.web.bookStore.services.BookService;
 
 
 @RestController
-@CrossOrigin(origins = "http://localhost:4200")
+@CrossOrigin(origins = "http://localhost:52747")
 @RequestMapping("/book")
 public class BookResource {
 	
@@ -35,6 +35,7 @@ public class BookResource {
 	BookService bookService; // auto generate an implement of book service class
 	
 //	@CrossOrigin(origins = "http://localhost:8080")
+	@CrossOrigin(origins = "http://localhost:52747")
 	@RequestMapping("/book-list")
 	public ResponseEntity<List<Book>> getAllBook(){
 		return new ResponseEntity<List<Book>>(bookService.findAll(), HttpStatus.OK);
@@ -47,13 +48,16 @@ public class BookResource {
 	
 //	@CrossOrigin(origins = "http://localhost:8080")
 	@RequestMapping("/{id}")// dynamic url
-	public Optional<Book> findBookById(@PathVariable("id") String id) {
+	public Book findBookById(@PathVariable("id") String id) {
 		try {
 			long parsedId = Long.parseLong(id);
-			return bookService.findOne(parsedId);
+			Optional<Book> rs = bookService.findOne(parsedId);
+			if(rs == null || rs.isEmpty())
+				return null;
+			 return rs.get();
 		} catch (Exception e) {
 			// TODO: handle exception
-			System.out.println(e.getMessage());
+			System.out.println(e.getMessage()+"Code da vao dong 58");
 			return null;
 		}
 	}
