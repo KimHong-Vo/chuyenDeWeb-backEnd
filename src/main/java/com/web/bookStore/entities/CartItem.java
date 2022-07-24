@@ -1,5 +1,7 @@
 package com.web.bookStore.entities;
 
+import java.io.Serializable;
+
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
@@ -9,7 +11,7 @@ import javax.persistence.ManyToOne;
 
 
 @Entity
-public class CartItem {
+public class CartItem implements Serializable{
 	@Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
