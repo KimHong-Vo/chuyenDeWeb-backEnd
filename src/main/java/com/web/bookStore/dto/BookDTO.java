@@ -124,21 +124,18 @@ public class BookDTO {
 		this.bookImage = bookImage;
 		
 	}
-	
-	
-    
+ 
 	public String getPicturePath() {
 		return picturePath;
 	}
 	public void setPicturePath(String picturePath) {
 		this.picturePath = picturePath;
 	}
-	public BookDTO(Long id, String title, double ourPrice, MultipartFile bookImage) {
-		super();
+	public BookDTO(Long id, String title, double ourPrice, String picturePath) {
 		Id = id;
 		this.title = title;
 		this.ourPrice = ourPrice;
-		this.bookImage = bookImage;
+		this.picturePath = picturePath;
 	}
 
  

@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -29,7 +30,7 @@ import com.web.bookStore.services.CartService;
 import com.web.bookStore.services.UserService;
 
 @RestController
-//@CrossOrigin(origins = "http://localhost:52747")
+@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("/cart")
 public class CartResource {
 
@@ -53,10 +54,14 @@ public class CartResource {
 		Cart cart = cartSer.getCartById(user.getUserCart().getId()).get();
 		Set<CartItemDTO> cartItemDTO = new HashSet<>();
 		Set<CartItem> cartItem = cart.getCartItems();
+		System.out.println("cart item number: " + cart.getCartItems().size());
+		
 		for (CartItem c : cartItem) {
+			System.out.println("cart item null?: " + c==null);
 			BookDTO bDTO = new BookDTO(c.getBook().getId(), c.getBook().getTitle(), c.getBook().getOurPrice(),
-					c.getBook().getBookImage());
-			bDTO.setPicturePath(c.getBook().getPicturePath());
+					c.getBook().getPicturePath());
+			System.out.println(c.getBook().getPicturePath()+" bookdto:link picture");
+			System.out.println(bDTO.getPicturePath()+" bookdto:link picture");
 			CartItemDTO cDTO = new CartItemDTO(c.getQuantity(), bDTO);
 			cDTO.setId(c.getId());
 			cartItemDTO.add(cDTO);
