@@ -5,6 +5,8 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.web.bookStore.entities.Book;
+import com.web.bookStore.requests.BookFilterRequest;
+import com.web.bookStore.responses.BookFilterResponse;
 
 public interface BookService{
 	List<Book> findAll();
@@ -18,4 +20,6 @@ public interface BookService{
     List<Book> blurrySearch(String title);
     
     Book saveBook(Book book);
+    
+    BookFilterResponse findByFilter(BookFilterRequest request);
 }
