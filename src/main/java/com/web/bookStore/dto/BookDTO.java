@@ -20,6 +20,7 @@ public class BookDTO {
     private String description;
     private int inStockNumber;
     private MultipartFile bookImage;
+    private String picturePath;
 	public Long getId() {
 		return Id;
 	}
@@ -121,8 +122,17 @@ public class BookDTO {
 	}
 	public void setBookImage(MultipartFile bookImage) {
 		this.bookImage = bookImage;
+		
 	}
+	
+	
     
+	public String getPicturePath() {
+		return picturePath;
+	}
+	public void setPicturePath(String picturePath) {
+		this.picturePath = picturePath;
+	}
 	public BookDTO(Long id, String title, double ourPrice, MultipartFile bookImage) {
 		super();
 		Id = id;

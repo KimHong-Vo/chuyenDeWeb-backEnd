@@ -56,6 +56,7 @@ public class CartResource {
 		for (CartItem c : cartItem) {
 			BookDTO bDTO = new BookDTO(c.getBook().getId(), c.getBook().getTitle(), c.getBook().getOurPrice(),
 					c.getBook().getBookImage());
+			bDTO.setPicturePath(c.getBook().getPicturePath());
 			CartItemDTO cDTO = new CartItemDTO(c.getQuantity(), bDTO);
 			cDTO.setId(c.getId());
 			cartItemDTO.add(cDTO);
