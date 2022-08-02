@@ -41,6 +41,22 @@ public class User implements Serializable{
 	@JsonIgnore
 	private UserJWT jwt;
 
+	public int getRole() {
+		return role;
+	}
+
+	public void setRole(int role) {
+		this.role = role;
+	}
+
+	public UserJWT getJwt() {
+		return jwt;
+	}
+
+	public void setJwt(UserJWT jwt) {
+		this.jwt = jwt;
+	}
+
 	public void setId(String id) {
 		this.email = id;
 	}

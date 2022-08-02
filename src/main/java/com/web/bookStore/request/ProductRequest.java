@@ -19,5 +19,4 @@ public class ProductRequest {
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}
-
 }

@@ -32,74 +32,73 @@ import com.web.bookStore.services.BookService;
 @CrossOrigin
 @RequestMapping("/book")
 public class BookResource {
-	
-	@Autowired
-	BookService bookService; // auto generate an implement of book service class
-	
-//	@CrossOrigin(origins = "http://localhost:8080")
-	@CrossOrigin(origins = "http://localhost:52747")
-	@RequestMapping("/book-list")
-	public ResponseEntity<List<Book>> getAllBook(){
-		return new ResponseEntity<List<Book>>(bookService.findAll(), HttpStatus.OK);
-	}
+
+    @Autowired
+    BookService bookService; // auto generate an implement of book service class
+
+    @RequestMapping("/book-list")
+    public ResponseEntity<List<Book>> getAllBook() {
+        return new ResponseEntity<List<Book>>(bookService.findAll(), HttpStatus.OK);
+    }
 // VRUS ABOVE METHOD
 //	@RequestMapping("/book-list")
 //	public List<Book> getAllBook(){
 //		return bookService.findAll();
 //	}
-	
-//	@CrossOrigin(origins = "http://localhost:8080")
-	@RequestMapping("/{id}")// dynamic url
-	public Book findBookById(@PathVariable("id") String id) {
-		try {
-			long parsedId = Long.parseLong(id);
-			Optional<Book> rs = bookService.findOne(parsedId);
-			if(rs == null || rs.isEmpty())
-				return null;
-			 return rs.get();
-		} catch (Exception e) {
-			// TODO: handle exception
-			System.out.println(e.getMessage()+"Code da vao dong 58");
-			return null;
-		}
-	}
-//	@CrossOrigin(origins = "http://localhost:8080")
-	@PostMapping("/add")
+
+    @RequestMapping("/{id}")// dynamic url
+    public Book findBookById(@PathVariable("id") String id) {
+        try {
+            long parsedId = Long.parseLong(id);
+            Optional<Book> rs = bookService.findOne(parsedId);
+            if (rs == null || rs.isEmpty())
+                return null;
+            return rs.get();
+        } catch (Exception e) {
+            // TODO: handle exception
+            System.out.println(e.getMessage() + "Code da vao dong 58");
+            return null;
+        }
+    }
+
+    //	@CrossOrigin(origins = "http://localhost:8080")
+    @PostMapping("/add")
     public Book addnewBook(@RequestBody Book book) {
         return bookService.saveBook(book);
 
     }
 
-	@PostMapping("/update")
+    @PostMapping("/update")
     public Book updateBook(@RequestBody Book book) {
         return bookService.saveBook(book);
     }
-//	@CrossOrigin(origins = "http://localhost:8080")
-	@PostMapping( "/add/image")
+
+    //	@CrossOrigin(origins = "http://localhost:8080")
+    @PostMapping("/add/image")
     public ResponseEntity<String> uploadImage(
             @RequestParam("id") Long id,
             HttpServletResponse response, HttpServletRequest request
     ) {
         try {
-        	// get book
+            // get book
             Book book = bookService.findOne(id).get();
-            
-            if(book==null) {
-            	 return new ResponseEntity<String>("Upload failed!", HttpStatus.NOT_FOUND);
+
+            if (book == null) {
+                return new ResponseEntity<String>("Upload failed!", HttpStatus.NOT_FOUND);
             }
-            
+
             //upload picture
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
             Iterator<String> it = multipartRequest.getFileNames();
             MultipartFile multipartFile = multipartRequest.getFile(it.next());
             String fileName = id + ".png";
             byte[] bytes = multipartFile.getBytes();
-            
+
             String filePath = "/static/images/book/" + fileName;
-            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File("src/main/resources"+ filePath)));
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File("src/main/resources" + filePath)));
             stream.write(bytes);
             stream.close();
-            
+
             // update picture path
             book.setPicturePath(filePath);
             bookService.saveBook(book);
@@ -108,24 +107,26 @@ public class BookResource {
             e.printStackTrace();
             return new ResponseEntity<String>("Upload failed!", HttpStatus.BAD_REQUEST);
         }
-        
+
     }
-	 @PostMapping("/searchBook")
-	    public List<Book> searchBook(@RequestBody String keyword) {
-	        List<Book> bookList = bookService.blurrySearch(keyword);
 
-	        return bookList;
-	 }
+    @PostMapping("/searchBook")
+    public List<Book> searchBook(@RequestBody String keyword) {
+        List<Book> bookList = bookService.blurrySearch(keyword);
 
-//	 @CrossOrigin(origins = "http://localhost:8080")
-	 @PostMapping("/remove")
+        return bookList;
+    }
+
+    //	 @CrossOrigin(origins = "http://localhost:8080")
+    @PostMapping("/remove")
     public ResponseEntity<String> removeBook(@RequestBody String id) {
         bookService.removeOne(Long.parseLong(id));
         return new ResponseEntity("Book Deleted", HttpStatus.OK);
     }
-	 @CrossOrigin
-	@PostMapping("/books/filter")
-	public ResponseEntity<BookFilterResponse> filter(@RequestBody BookFilterRequest request){
-		return new ResponseEntity<BookFilterResponse>(bookService.findByFilter(request), HttpStatus.OK);
-	}
+
+    @CrossOrigin
+    @PostMapping("/books/filter")
+    public ResponseEntity<BookFilterResponse> filter(@RequestBody BookFilterRequest request) {
+        return new ResponseEntity<BookFilterResponse>(bookService.findByFilter(request), HttpStatus.OK);
+    }
 }
