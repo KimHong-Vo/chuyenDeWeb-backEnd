@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 //import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.web.bookStore.dto.BookDTO;
 import com.web.bookStore.dto.CartDTO;
 import com.web.bookStore.dto.CartItemDTO;
+import com.web.bookStore.entities.Book;
 import com.web.bookStore.entities.Cart;
 import com.web.bookStore.entities.CartItem;
 import com.web.bookStore.entities.User;
@@ -39,7 +41,7 @@ public class CartResource {
 
 	@Autowired
 	private CartService cartSer;
-	
+
 	@Autowired
 	private CartItemService cartItemService;
 
@@ -52,46 +54,85 @@ public class CartResource {
 		Set<CartItemDTO> cartItemDTO = new HashSet<>();
 		Set<CartItem> cartItem = cart.getCartItems();
 		for (CartItem c : cartItem) {
-			BookDTO bDTO = new BookDTO(c.getBook().getId(), c.getBook().getTitle(), c.getBook().getOurPrice(),c.getBook().getBookImage());
-			CartItemDTO cDTO = new CartItemDTO(c.getQuantity(),bDTO);
+			BookDTO bDTO = new BookDTO(c.getBook().getId(), c.getBook().getTitle(), c.getBook().getOurPrice(),
+					c.getBook().getBookImage());
+			CartItemDTO cDTO = new CartItemDTO(c.getQuantity(), bDTO);
+			cDTO.setId(c.getId());
 			cartItemDTO.add(cDTO);
 		}
 		CartDTO cartDTO = new CartDTO(cart.getId(), cartItemDTO);
-
 		return ResponseEntity.ok(cartDTO);
 	}
 
 	// pt them san pham vao gio hang
-	@PostMapping("/addProduct")
-	public ResponseEntity<CartDTO> addProductToCart(@RequestParam("productId") long id) {
+	@GetMapping("/addCart/{bookID}")
+	public ResponseEntity<String> addProductToCart(
+			@PathVariable long bookID) {
 //		String token ="";
 //		User u = getUserByToken()
-		User u = uService.findUserByID("18130233@st.hcmuaf.edu.vn");
-		//lay cartitem xem thu no co chua id book chua neu roi tang so luong len 1, chua thi them dong moi
+//	    if(u==null) return "login";
+//	    else (do the following tasks)
+		User u = uService.findUserByID("18130233@st.hcmuaf.edu.vn");// this is u above
+		// lay cartitem xem thu no co chua id book chua neu roi tang so luong len 1,
+		// chua thi them dong moi
 		Cart cart = cartSer.getCartById(u.getUserCart().getId()).get();
 		Set<CartItem> cartItem = cart.getCartItems();
+		System.out.println(cartItem.toString());
+		Book book = bookService.findOne(bookID).get();
+		if(cartItem.size()==0) {
+			CartItem item = new CartItem();
+			item.setQuantity(1);
+			item.setBook(book);
+			item.setCart(cart);
+			cartItemService.saveCartItem(item);
+			// update book qunaties in stock
+			book.setInStockNumber(book.getInStockNumber() - 1);
+			bookService.update(book);
+			return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
+		}
 		for (CartItem c : cartItem) {
-			if(c.getBook().getId()==id) {
-				c.setQuantity(c.getQuantity()+1);
-			}else {
-				
-//				cartItemService.saveCartItem()
+			if (c.getBook().getId() == bookID) {
+				// update book quantites in cartItem
+				c.setQuantity(c.getQuantity() + 1);
+				cartItemService.update(c);
+				// update book qunaties in stock
+				book.setInStockNumber(book.getInStockNumber() - 1);
+				bookService.update(book);
+				return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
+			} else {
+				CartItem item = new CartItem();
+				item.setQuantity(1);
+				item.setBook(book);
+				item.setCart(cart);
+				cartItemService.saveCartItem(item);
+				// update book qunaties in stock
+				book.setInStockNumber(book.getInStockNumber() - 1);
+				bookService.update(book);
+				return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
 			}
 		}
-		
-		
-		return ResponseEntity.ok(null);
+		return ResponseEntity.ok("Sản phẩm không được thêm vào Giỏ hàng");
 	}
 
-	
 	// xoa san pham trong gio hang
-	@GetMapping("/removeProduct")
-	public ResponseEntity<Boolean> removeProductToCart(@PathVariable String userId) {
-
-		return ResponseEntity.ok(false);
+	@GetMapping("/removeProduct/{idItem}")
+	public ResponseEntity<Boolean> removeProductToCart(
+			@PathVariable long idItem) {
+//		String token ="";
+//		User u = getUserByToken()
+//	    if(u==null) return "login";
+//	    else (do the following tasks)
+		User u = uService.findUserByID("18130233@st.hcmuaf.edu.vn");// this is u above
+		CartItem c = cartItemService.getCartItem(idItem);
+		Book b = c.getBook();
+		try {
+			b.setInStockNumber(b.getInStockNumber() + c.getQuantity());
+			bookService.update(b);
+			cartItemService.remove(idItem);
+		} catch (Exception e) {
+			System.out.println(false);
+		}
+		return ResponseEntity.ok(true);
 	}
-	
-	
-	
-	
+
 }
