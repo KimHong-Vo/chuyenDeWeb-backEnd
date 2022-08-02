@@ -24,5 +24,10 @@ public class UserServiceImplement implements UserService{
 		}
 		return null;
 	}
+	@Override
+	public User findUserByID(String idUser) {
+		return uRepo.findById(idUser).get();
+	}
+	
 
 }

@@ -5,14 +5,19 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.repository.support.Repositories;
 import org.springframework.stereotype.Service;
 
 import com.web.bookStore.entities.Book;
+import com.web.bookStore.entities.CartItem;
 import com.web.bookStore.repositories.BookRepository;
 import com.web.bookStore.requests.BookFilterRequest;
 import com.web.bookStore.responses.BookFilterResponse;
@@ -23,6 +28,13 @@ import com.web.bookStore.specifications.BookSpecification;
 public class BookServiceImplement implements BookService{
 	@Autowired
 	BookRepository bookRepository;
+	@Autowired
+	private EntityManager entityManager;
+
+	@Transactional
+	public Book update(Book book) {
+		return entityManager.merge(book);
+	}
 	
 	@Override
 	public List<Book> findAll() {// only find book have been actived
@@ -110,5 +122,6 @@ public class BookServiceImplement implements BookService{
 		}
 		return new BookFilterResponse(books, bookRepository.count(BookSpecification.containTitle(request.getTitlePart())));
 	}
+	
 
 }
