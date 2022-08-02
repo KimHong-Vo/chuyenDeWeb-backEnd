@@ -23,11 +23,13 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.MultipartHttpServletRequest;
 
 import com.web.bookStore.entities.Book;
+import com.web.bookStore.requests.BookFilterRequest;
+import com.web.bookStore.responses.BookFilterResponse;
 import com.web.bookStore.services.BookService;
 
 
 @RestController
-@CrossOrigin(origins = "http://localhost:52747")
+@CrossOrigin
 @RequestMapping("/book")
 public class BookResource {
 	
@@ -79,18 +81,28 @@ public class BookResource {
             HttpServletResponse response, HttpServletRequest request
     ) {
         try {
-            Optional<Book> book = bookService.findOne(id);
+        	// get book
+            Book book = bookService.findOne(id).get();
+            
+            if(book==null) {
+            	 return new ResponseEntity<String>("Upload failed!", HttpStatus.NOT_FOUND);
+            }
+            
+            //upload picture
             MultipartHttpServletRequest multipartRequest = (MultipartHttpServletRequest) request;
             Iterator<String> it = multipartRequest.getFileNames();
             MultipartFile multipartFile = multipartRequest.getFile(it.next());
             String fileName = id + ".png";
-
-
             byte[] bytes = multipartFile.getBytes();
-            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File("src/main/resources/static/images/book/" + fileName)));
+            
+            String filePath = "/static/images/book/" + fileName;
+            BufferedOutputStream stream = new BufferedOutputStream(new FileOutputStream(new File("src/main/resources"+ filePath)));
             stream.write(bytes);
             stream.close();
-
+            
+            // update picture path
+            book.setPicturePath(filePath);
+            bookService.saveBook(book);
             return new ResponseEntity<String>("Upload Success!", HttpStatus.OK);
         } catch (Exception e) {
             e.printStackTrace();
@@ -111,4 +123,9 @@ public class BookResource {
         bookService.removeOne(Long.parseLong(id));
         return new ResponseEntity("Book Deleted", HttpStatus.OK);
     }
+	 @CrossOrigin
+	@PostMapping("/books/filter")
+	public ResponseEntity<BookFilterResponse> filter(@RequestBody BookFilterRequest request){
+		return new ResponseEntity<BookFilterResponse>(bookService.findByFilter(request), HttpStatus.OK);
+	}
 }

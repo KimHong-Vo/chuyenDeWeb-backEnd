@@ -30,6 +30,7 @@ public class Book implements Serializable{
     private double listPrice;
     private double ourPrice;
     private boolean active;
+    private String picturePath;
     @Column(columnDefinition = "text")
     private String description;
     private int inStockNumber;
@@ -173,5 +174,14 @@ public class Book implements Serializable{
 		this.bookImage = bookImage;
 	}
 
+	public String getPicturePath() {
+		return picturePath;
+	}
+
+	public void setPicturePath(String picturePath) {
+		this.picturePath = picturePath;
+	}
+
+	
     
 }

@@ -24,20 +24,22 @@ public class User implements Serializable{
     private String password;
     private String firstName;
     private String lastName;
-    
     private String phone;
     private boolean enabled = true;
-    
+    private int role;
 //    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "user")
 //    @JsonIgnore
 //    Set<UserRole> userRoles = new HashSet<>();
     @OneToOne(cascade = CascadeType.ALL, mappedBy = "user")
     @JsonIgnore
     Cart userCart;
-
 	public String getId() {
 		return email;
 	}
+	
+	@OneToOne(mappedBy = "user")
+	@JsonIgnore
+	private UserJWT jwt;
 
 	public void setId(String id) {
 		this.email = id;
