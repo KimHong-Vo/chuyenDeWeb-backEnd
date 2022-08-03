@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -27,6 +28,7 @@ import com.web.bookStore.request.ProductRequest;
 import com.web.bookStore.services.BookService;
 import com.web.bookStore.services.CartItemService;
 import com.web.bookStore.services.CartService;
+import com.web.bookStore.services.JWTAuthenticationService;
 import com.web.bookStore.services.UserService;
 
 @RestController
@@ -46,66 +48,54 @@ public class CartResource {
 	@Autowired
 	private CartItemService cartItemService;
 
+	@Autowired
+	private JWTAuthenticationService jwtAuthenticationService;
+
 	// pt loadCart
-	@GetMapping("/user/{userId}")
-	public ResponseEntity<CartDTO> getCartByUserId(@PathVariable String userId) {
+	@GetMapping("/user")
+	public ResponseEntity<CartDTO> getCartByUserId(@RequestHeader(name = "Authorization") String token) {
 		// kiem tra phien dang nhap cua user nao lay cart cua user do
-		User user = uService.findUserByID(userId);
-		Cart cart = cartSer.getCartById(user.getUserCart().getId()).get();
-		Set<CartItemDTO> cartItemDTO = new HashSet<>();
-		Set<CartItem> cartItem = cart.getCartItems();
-		System.out.println("cart item number: " + cart.getCartItems().size());
-		
-		for (CartItem c : cartItem) {
-			System.out.println("cart item null?: " + c==null);
-			BookDTO bDTO = new BookDTO(c.getBook().getId(), c.getBook().getTitle(), c.getBook().getOurPrice(),
-					c.getBook().getPicturePath());
-			System.out.println(c.getBook().getPicturePath()+" bookdto:link picture");
-			System.out.println(bDTO.getPicturePath()+" bookdto:link picture");
-			CartItemDTO cDTO = new CartItemDTO(c.getQuantity(), bDTO);
-			cDTO.setId(c.getId());
-			cartItemDTO.add(cDTO);
+		User user = jwtAuthenticationService.getUserEmail(token);
+		if (user == null)
+			return new ResponseEntity<CartDTO>(HttpStatus.UNAUTHORIZED);
+		else {
+			Cart cart = cartSer.getCartById(user.getUserCart().getId()).get();
+			Set<CartItemDTO> cartItemDTO = new HashSet<>();
+			Set<CartItem> cartItem = cart.getCartItems();
+			System.out.println("cart item number: " + cart.getCartItems().size());
+
+			for (CartItem c : cartItem) {
+				System.out.println("cart item null?: " + c == null);
+				BookDTO bDTO = new BookDTO(c.getBook().getId(), c.getBook().getTitle(), c.getBook().getOurPrice(),
+						c.getBook().getPicturePath());
+				System.out.println(c.getBook().getPicturePath() + " bookdto:link picture");
+				System.out.println(bDTO.getPicturePath() + " bookdto:link picture");
+				CartItemDTO cDTO = new CartItemDTO(c.getQuantity(), bDTO);
+				cDTO.setId(c.getId());
+				cartItemDTO.add(cDTO);
+			}
+			CartDTO cartDTO = new CartDTO(cart.getId(), cartItemDTO);
+			return ResponseEntity.ok(cartDTO);
 		}
-		CartDTO cartDTO = new CartDTO(cart.getId(), cartItemDTO);
-		return ResponseEntity.ok(cartDTO);
+
 	}
 
 	// pt them san pham vao gio hang
 	@GetMapping("/addCart/{bookID}")
-	public ResponseEntity<String> addProductToCart(
+	public ResponseEntity<String> addProductToCart(@RequestHeader(name = "Authorization") String token,
 			@PathVariable long bookID) {
-//		String token ="";
-//		User u = getUserByToken()
-//	    if(u==null) return "login";
+		User u = jwtAuthenticationService.getUserEmail(token);
+		if (u == null)
+			return new ResponseEntity<String>(HttpStatus.UNAUTHORIZED);
+		else {
 //	    else (do the following tasks)
-		User u = uService.findUserByID("18130233@st.hcmuaf.edu.vn");// this is u above
-		// lay cartitem xem thu no co chua id book chua neu roi tang so luong len 1,
-		// chua thi them dong moi
-		Cart cart = cartSer.getCartById(u.getUserCart().getId()).get();
-		Set<CartItem> cartItem = cart.getCartItems();
-		System.out.println(cartItem.toString());
-		Book book = bookService.findOne(bookID).get();
-		if(cartItem.size()==0) {
-			CartItem item = new CartItem();
-			item.setQuantity(1);
-			item.setBook(book);
-			item.setCart(cart);
-			cartItemService.saveCartItem(item);
-			// update book qunaties in stock
-			book.setInStockNumber(book.getInStockNumber() - 1);
-			bookService.update(book);
-			return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
-		}
-		for (CartItem c : cartItem) {
-			if (c.getBook().getId() == bookID) {
-				// update book quantites in cartItem
-				c.setQuantity(c.getQuantity() + 1);
-				cartItemService.update(c);
-				// update book qunaties in stock
-				book.setInStockNumber(book.getInStockNumber() - 1);
-				bookService.update(book);
-				return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
-			} else {
+			// lay cartitem xem thu no co chua id book chua neu roi tang so luong len 1,
+			// chua thi them dong moi
+			Cart cart = cartSer.getCartById(u.getUserCart().getId()).get();
+			Set<CartItem> cartItem = cart.getCartItems();
+			System.out.println(cartItem.toString());
+			Book book = bookService.findOne(bookID).get();
+			if (cartItem.size() == 0) {
 				CartItem item = new CartItem();
 				item.setQuantity(1);
 				item.setBook(book);
@@ -116,29 +106,52 @@ public class CartResource {
 				bookService.update(book);
 				return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
 			}
+			if (cartItem.size() > 0)
+				for (CartItem c : cartItem) {
+					if (c.getBook().getId() == bookID) {
+						// update book quantites in cartItem
+						c.setQuantity(c.getQuantity() + 1);
+						cartItemService.update(c);
+						// update book qunaties in stock
+						book.setInStockNumber(book.getInStockNumber() - 1);
+						bookService.update(book);
+						return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
+					} else {
+						CartItem item = new CartItem();
+						item.setQuantity(1);
+						item.setBook(book);
+						item.setCart(cart);
+						cartItemService.saveCartItem(item);
+						// update book qunaties in stock
+						book.setInStockNumber(book.getInStockNumber() - 1);
+						bookService.update(book);
+						return ResponseEntity.ok("Sản phẩm đã được thêm vào Giỏ hàng");
+					}
+				}
+			return ResponseEntity.ok("Sản phẩm không được thêm vào Giỏ hàng");
 		}
-		return ResponseEntity.ok("Sản phẩm không được thêm vào Giỏ hàng");
 	}
 
 	// xoa san pham trong gio hang
 	@GetMapping("/removeProduct/{idItem}")
-	public ResponseEntity<Boolean> removeProductToCart(
+	public ResponseEntity<Boolean> removeProductToCart(@RequestHeader(name = "Authorization") String token,
 			@PathVariable long idItem) {
-//		String token ="";
-//		User u = getUserByToken()
-//	    if(u==null) return "login";
-//	    else (do the following tasks)
-		User u = uService.findUserByID("18130233@st.hcmuaf.edu.vn");// this is u above
-		CartItem c = cartItemService.getCartItem(idItem);
-		Book b = c.getBook();
-		try {
-			b.setInStockNumber(b.getInStockNumber() + c.getQuantity());
-			bookService.update(b);
-			cartItemService.remove(idItem);
-		} catch (Exception e) {
-			System.out.println(false);
+//		User user = jwtAuthenticationService.getUserEmail(token);
+		User user = jwtAuthenticationService.getUserEmail(token);
+		if (user == null)
+			return new ResponseEntity<Boolean>(HttpStatus.UNAUTHORIZED);
+		else {
+			CartItem c = cartItemService.getCartItem(idItem);
+			Book b = c.getBook();
+			try {
+				b.setInStockNumber(b.getInStockNumber() + c.getQuantity());
+				bookService.update(b);
+				cartItemService.remove(idItem);
+			} catch (Exception e) {
+				System.out.println(false);
+			}
+			return ResponseEntity.ok(true);
 		}
-		return ResponseEntity.ok(true);
 	}
 
 }
