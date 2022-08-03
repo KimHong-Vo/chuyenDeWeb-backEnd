@@ -26,7 +26,11 @@ public class UserServiceImplement implements UserService{
 	}
 	@Override
 	public User findUserByID(String idUser) {
-		return uRepo.findById(idUser).get();
+		Optional<User> u = uRepo.findById(idUser);
+		if(u==null || u.isEmpty()) {
+			return null;
+			}
+		return u.get();
 	}
 	
 

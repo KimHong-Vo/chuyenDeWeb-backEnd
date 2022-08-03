@@ -49,6 +49,11 @@ public class UserResource {
             return new ResponseEntity<User>(result, HttpStatus.OK);
         }
     }
+    @GetMapping("/checkExistEmail/{email}")
+    public ResponseEntity<Boolean> isEmailExist(@PathVariable(name = "email") String email) {
+    	User u = uService.findUserByID(email);
+    	return u!=null? new ResponseEntity<Boolean>(true, HttpStatus.OK) : new ResponseEntity<Boolean>(false, HttpStatus.OK);
+    }
 
     @CrossOrigin
     @PostMapping("/logout")
