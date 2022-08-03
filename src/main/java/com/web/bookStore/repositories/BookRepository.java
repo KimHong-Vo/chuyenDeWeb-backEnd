@@ -16,6 +16,8 @@ import com.web.bookStore.entities.Book;
 
 @Repository
 public interface BookRepository extends JpaRepository<Book, Long>, JpaSpecificationExecutor<Book>{
-	List<Book> findByTitle(String title);
+	@Query(value = "select * from book where book.title like %:title% limit 6", nativeQuery = true)
+	List<Book> findByTitle(@Param("title") String title);
+	
     Set<Book> findByTitleContaining(String keyword);
 }
