@@ -11,12 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-
 import static com.web.bookStore.bookModule.BookConstant.Message.SUCCESSFULLY;
-import static org.springframework.http.MediaType.*;
 
 @Log4j2
 @CrossOrigin
@@ -77,8 +72,8 @@ public class BookController {
         }
     }
 
-    @DeleteMapping("/remove")
-    public ResponseEntity<ResponseObject> removeBook(@RequestBody String id) {
+    @DeleteMapping("/remove/{id}")
+    public ResponseEntity<ResponseObject> removeBook(@PathVariable String id) {
         try {
             bookService.remove(Integer.parseInt(id));
             return ResponseEntity.ok().body(new ResponseObject(SUCCESSFULLY));

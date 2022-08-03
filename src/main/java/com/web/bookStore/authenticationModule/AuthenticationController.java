@@ -3,6 +3,8 @@ package com.web.bookStore.authenticationModule;
 import com.web.bookStore.authenticationModule.exception.UnauthorizedException;
 import com.web.bookStore.authenticationModule.exception.WrongPasswordException;
 import com.web.bookStore.authenticationModule.model.request.LoginRequest;
+import com.web.bookStore.jwtModule.JWTAuthenticationService;
+import com.web.bookStore.shared.entitiy.UserEntity;
 import com.web.bookStore.shared.model.ResponseObject;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +23,16 @@ public class AuthenticationController {
     @Autowired
     private AuthenticationService authenticationService;
 
+    @Autowired
+    private AuthenticationRepository authenticationRepository;
+
     @PostMapping(path = "login")
     public ResponseEntity<ResponseObject> login(@RequestBody(required = true) LoginRequest loginRequest) {
         try {
+            UserEntity foundUser = authenticationRepository.findByEmail(loginRequest.getEmail());
+            if (foundUser.getRole() != 1) {
+                return ResponseEntity.status(HttpStatus.NOT_ACCEPTABLE).body(new ResponseObject(NOT_ACCEPTABLE));
+            }
             log.info(String.format("Login with email: %s", loginRequest.getEmail()));
             return ResponseEntity.ok(new ResponseObject(SUCCESSFULLY, authenticationService.login(loginRequest)));
         } catch (UnauthorizedException exception) {

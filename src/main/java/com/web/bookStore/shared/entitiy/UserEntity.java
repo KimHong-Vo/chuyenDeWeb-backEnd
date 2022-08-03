@@ -14,14 +14,13 @@ import lombok.Setter;
 @Table(name = "user")
 public class UserEntity implements Serializable{
 	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Integer id;
 	private String email;
     private String username;
     private String password;
     private String phone;
     private boolean enabled = true;
-    
+	private int role;
+
 //    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "user")
 //    @JsonIgnore
 //    Set<UserRole> userRoles = new HashSet<>();

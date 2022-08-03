@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<configuration name="logging">
+    <Appenders>
+        <Console name="Console">
+            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss} %-5level [%c] (%M) : %m%n%throwable{full}"/>
+        </Console>
+        <RollingFile name="RollingFile" fileName="C:/Users/letan/Desktop/online-shop-admin.log"
+                     filePattern="C:/Users/letan/Desktop/online-shop-admin.log.%d{MM-dd-yyyy}-%i">
+            <Policies>
+                <TimeBasedTriggeringPolicy/>
+                <SizeBasedTriggeringPolicy size="1 MB"/>
+            </Policies>
+            <PatternLayout>
+                <Pattern>%d{yyyy-MM-dd HH:mm:ss} %-5level [%c] (%M) : %m%n%throwable{full}</Pattern>
+            </PatternLayout>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Logger name="com.web" level="INFO">
+            <AppenderRef ref="RollingFile"/>
+        </Logger>
+        <Root level="INFO">
+            <AppenderRef ref="Console"/>
+        </Root>
+    </Loggers>
+</configuration>
